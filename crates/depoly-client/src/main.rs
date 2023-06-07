@@ -9,10 +9,12 @@ struct Args{
 	#[arg(short, long)]
 	remote:String,
 	#[arg(short, long)]
-	token:String
+	token:String,
+	#[arg(short, long, default_value_t = String::from("http"))]
+	protocol:String
 }
 fn main() ->anyhow::Result<()> {
-	//let args = Args::parse();
+	let args = Args::parse();
 	//let current_dir = std::env::current_dir()?;
 	let current_dir = Path::new("/Users/xieminghao/Documents/rust-workspace/test");
 	let temp_dir = std::env::temp_dir();
@@ -26,8 +28,10 @@ fn main() ->anyhow::Result<()> {
 	}))?;
 	println!();
 
-    let token = "123";//args.token;
-	let remote = "http://localhost:8080";//args.remote;
+    let token = args.token;
+	let remote_ip = args.remote;
+	let protocol = args.protocol;
+	let remote = format!("{protocol}://{remote_ip}");//args.remote;
 	let file_size = temp_zip.metadata()?.len().to_string();
 	//println!("file size: {}, path: {}",file_size,temp_zip.display());
 	let form_data = multipart::Form::new().text("token".to_owned(), token).text("file_size".to_owned(), file_size).file("file", temp_zip)?;
