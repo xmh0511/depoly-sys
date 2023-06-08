@@ -110,6 +110,7 @@ pub fn decompress_zip_to_dir<F:FnMut(Message)>(src:&str,dest:&str, mut call_back
                 }
             }
             let mut outfile = std::fs::File::create(&outpath)?;
+			println!("process {}",relative_path.display());
             match std::io::copy(&mut file, &mut outfile){
                 Ok(_) => {},
                 Err(e) => {
