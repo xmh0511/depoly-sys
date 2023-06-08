@@ -42,7 +42,7 @@ fn main() ->anyhow::Result<()> {
 	if r.get("status").ok_or(anyhow::anyhow!("key \"status\" not exist in response body"))?.as_u64().unwrap_or(0) == 200{
 		println!("Depoly successfully");
 	}else{
-		println!("Error {:?}",r);
+		println!("Error:\n {:#?}",r.to_string());
 	}
 	Ok(())
 }
