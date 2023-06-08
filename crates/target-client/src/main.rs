@@ -8,6 +8,14 @@ struct Config {
     host: String,
 }
 
+struct FileDroper(std::path::PathBuf);
+impl Drop for FileDroper{
+	fn drop(&mut self) {
+		tracing::info!("exhaust {}",self.0.display());
+		std::fs::remove_file(&self.0).unwrap_or_default();
+	}
+}
+
 #[handler]
 async fn depoly(
     req: &mut Request,
@@ -18,6 +26,7 @@ async fn depoly(
         .file("file")
         .await
         .ok_or(anyhow::anyhow!("file not found in request"))?;
+	let _file_droper = FileDroper(file.path().to_owned());
     let file_path = file
         .path()
         .to_owned()

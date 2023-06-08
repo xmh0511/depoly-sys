@@ -467,6 +467,13 @@ async fn edit_project(
 	}
     Ok(())
 }
+struct FileDroper(std::path::PathBuf);
+impl Drop for FileDroper{
+	fn drop(&mut self) {
+		tracing::info!("exhaust {}",self.0.display());
+		std::fs::remove_file(&self.0).unwrap_or_default();
+	}
+}
 
 #[handler]
 async fn depoly(
@@ -476,6 +483,7 @@ async fn depoly(
 ) -> Result<(), CatchError> {
 	let file = req.file("file").await.ok_or(anyhow::anyhow!("file not found in the request"))?;
 	let file_saved_path = file.path().to_owned();
+	let _file_droper = FileDroper(file_saved_path.clone());
 	let file_size = req.form::<u64>("file_size").await.ok_or(anyhow::anyhow!("file_size not found in the request"))?;
 	let token =  req.form::<&str>("token").await.ok_or(anyhow::anyhow!("token not found in the request"))?.trim().to_owned();
 	let db = DB_CONN.get().ok_or(anyhow::anyhow!("database is busy"))?;
