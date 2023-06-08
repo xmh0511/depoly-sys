@@ -96,7 +96,13 @@ pub fn decompress_zip_to_dir<F:FnMut(Message)>(src:&str,dest:&str, mut call_back
 		let outpath = prefix_path.join(&outpath);
 		if (*file.name()).ends_with('/') {
             //println!("File {} extracted to \"{}\"", i, outpath.display());
-            std::fs::create_dir_all(&outpath)?;
+            match std::fs::create_dir_all(&outpath){
+				Ok(_)=>{}
+				Err(e)=>{
+					let err = format!("fail to create dir {}, reson:{e:?}",relative_path.display());
+					fail_files.push(err);
+				}
+			}
         } else {
             // println!(
             //     "File {} extracted to \"{}\" ({} bytes)",
@@ -106,11 +112,26 @@ pub fn decompress_zip_to_dir<F:FnMut(Message)>(src:&str,dest:&str, mut call_back
             // );
             if let Some(p) = outpath.parent() {
                 if !p.exists() {
-                    std::fs::create_dir_all(p)?;
+                    match std::fs::create_dir_all(p){
+						Ok(_)=>{}
+						Err(e)=>{
+							let err = format!("fail to create dir {}, reson:{e:?}",relative_path.display());
+							fail_files.push(err);
+						}
+					}
                 }
             }
-            let mut outfile = std::fs::File::create(&outpath)?;
-			println!("process {}",relative_path.display());
+            let mut outfile = match std::fs::File::create(&outpath){
+				Ok(file)=>{
+					file
+				}
+				Err(e)=>{
+					let err = format!("fail to create {}, reson:{e:?}",relative_path.display());
+					fail_files.push(err);
+					continue;
+				}
+			};
+			//println!("process {}",relative_path.display());
             match std::io::copy(&mut file, &mut outfile){
                 Ok(_) => {},
                 Err(e) => {
@@ -143,7 +164,7 @@ pub fn decompress_zip_to_dir<F:FnMut(Message)>(src:&str,dest:&str, mut call_back
 			f(msg);
 		};
 	}
-	println!("complete process");
+	//println!("complete process");
 	if fail_files.is_empty(){
 		Ok(None)
 	}else{
