@@ -24,7 +24,7 @@ fn main() ->anyhow::Result<()> {
 	bar.set_job_title("Package Objects");
 	file_core::compress_to_zip(current_dir.to_str().ok_or(anyhow::anyhow!("invalid path {:?}",current_dir))?, temp_zip.to_str().ok_or(anyhow::anyhow!("invalid temporary path {:?}",temp_zip))?, Some(move |msg:file_core::Message|{
 		bar.reach_percent((msg.progress * 100 as f64) as i32);
-		std::thread::sleep(std::time::Duration::from_secs(1));
+		//std::thread::sleep(std::time::Duration::from_secs(1));
 	}))?;
 	println!();
 
