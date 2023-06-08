@@ -143,6 +143,7 @@ pub fn decompress_zip_to_dir<F:FnMut(Message)>(src:&str,dest:&str, mut call_back
 			f(msg);
 		};
 	}
+	println!("complete process");
 	if fail_files.is_empty(){
 		Ok(None)
 	}else{
