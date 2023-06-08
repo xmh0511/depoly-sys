@@ -1,4 +1,4 @@
-use std::{path::Path, io::Write};
+use std::{path::Path};
 
 use clap::Parser;
 use reqwest::blocking::multipart;
@@ -15,8 +15,8 @@ struct Args{
 }
 fn main() ->anyhow::Result<()> {
 	let args = Args::parse();
-	//let current_dir = std::env::current_dir()?;
-	let current_dir = Path::new("/Users/xieminghao/Documents/rust-workspace/test");
+	let current_dir = std::env::current_dir()?;
+	//let current_dir = Path::new("/Users/xieminghao/Documents/rust-workspace/test");
 	let temp_dir = std::env::temp_dir();
 	let file_name = format!("{}.zip",uuid::Uuid::new_v4().to_string());
 	let temp_zip = temp_dir.join(Path::new(&file_name));
