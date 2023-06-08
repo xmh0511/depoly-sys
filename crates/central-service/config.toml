@@ -1,5 +1,6 @@
 host = "0.0.0.0:6000"
-db_url = "mysql://root:970252187@localhost/depoly-sys"
+##db_url = "mysql://root:970252187@localhost/depoly-sys"
+db_url = "sqlite://depoly_sys.db"
 secret_key = "123456789"
 
 [admin]
