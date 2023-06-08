@@ -1,0 +1,7 @@
+host = "0.0.0.0:6000"
+db_url = "mysql://root:970252187@localhost/depoly-sys"
+secret_key = "123456789"
+
+[admin]
+name = "admin"
+pass = "admin"
