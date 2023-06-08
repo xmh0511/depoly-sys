@@ -36,11 +36,11 @@ fn main() ->anyhow::Result<()> {
 	//println!("file size: {}, path: {}",file_size,temp_zip.display());
 	let form_data = multipart::Form::new().text("token".to_owned(), token).text("file_size".to_owned(), file_size).file("file", temp_zip)?;
 	let client = reqwest::blocking::Client::new();
-	println!("Starting to upload to the remote server");
+	println!("Starting to upload objects to the remote server");
 	let resp = client.post(format!("{remote}/depoly")).multipart(form_data).send()?;
 	let r = resp.json::<Value>()?;
 	if r.get("status").ok_or(anyhow::anyhow!("key \"status\" not exist in response body"))?.as_u64().unwrap_or(0) == 200{
-		println!("depoly ok");
+		println!("Depoly successfully");
 	}else{
 		println!("Error {:?}",r);
 	}

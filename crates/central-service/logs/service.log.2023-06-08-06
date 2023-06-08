@@ -134,3 +134,233 @@ LIMIT
   ?
   
 [2m2023-06-08 14:34:57.864[0m [32m INFO[0m [2msalvo_core::server[0m[2m:[0m listening HTTP/1.1 on http://0.0.0.0:6000
+[2m2023-06-08 14:36:29.167[0m [32m INFO[0m [2msalvo_core::server[0m[2m:[0m listening HTTP/1.1 on http://0.0.0.0:6000
+[2m2023-06-08 14:36:36.393[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m SELECT "host_tb"."id", "host_tb"."host", "host_tb"."secret", …; rows affected: 0, rows returned: 0, elapsed: 943.325µs
+
+SELECT
+  "host_tb"."id",
+  "host_tb"."host",
+  "host_tb"."secret",
+  "host_tb"."create_time",
+  "host_tb"."update_time",
+  "host_tb"."protocol"
+FROM
+  "host_tb"
+  
+[2m2023-06-08 14:36:40.430[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m SELECT "host_tb"."id", "host_tb"."host", "host_tb"."secret", …; rows affected: 0, rows returned: 0, elapsed: 191.677µs
+
+SELECT
+  "host_tb"."id",
+  "host_tb"."host",
+  "host_tb"."secret",
+  "host_tb"."create_time",
+  "host_tb"."update_time",
+  "host_tb"."protocol"
+FROM
+  "host_tb"
+WHERE
+  "host_tb"."host" = ?
+LIMIT
+  ?
+  
+[2m2023-06-08 14:36:40.436[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m INSERT INTO "host_tb" ("host", …; rows affected: 1, rows returned: 0, elapsed: 3.409ms
+
+INSERT INTO
+  "host_tb" (
+    "host",
+    "secret",
+    "create_time",
+    "update_time",
+    "protocol"
+  )
+VALUES
+  (?, ?, ?, ?, ?)
+  
+[2m2023-06-08 14:36:40.439[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m SELECT "host_tb"."id", "host_tb"."host", "host_tb"."secret", …; rows affected: 1, rows returned: 1, elapsed: 195.556µs
+
+SELECT
+  "host_tb"."id",
+  "host_tb"."host",
+  "host_tb"."secret",
+  "host_tb"."create_time",
+  "host_tb"."update_time",
+  "host_tb"."protocol"
+FROM
+  "host_tb"
+WHERE
+  "host_tb"."id" = ?
+LIMIT
+  ?
+  
+[2m2023-06-08 14:36:43.488[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m SELECT "host_tb"."id", "host_tb"."host", "host_tb"."secret", …; rows affected: 1, rows returned: 1, elapsed: 329.721µs
+
+SELECT
+  "host_tb"."id",
+  "host_tb"."host",
+  "host_tb"."secret",
+  "host_tb"."create_time",
+  "host_tb"."update_time",
+  "host_tb"."protocol"
+FROM
+  "host_tb"
+  
+[2m2023-06-08 14:36:43.506[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m SELECT "project_tb"."id", "project_tb"."path", "project_tb"."name", …; rows affected: 1, rows returned: 0, elapsed: 1.637ms
+
+SELECT
+  "project_tb"."id",
+  "project_tb"."path",
+  "project_tb"."name",
+  "project_tb"."parent_id",
+  "project_tb"."command",
+  "project_tb"."token",
+  "project_tb"."create_time",
+  "project_tb"."update_time"
+FROM
+  "project_tb"
+WHERE
+  "project_tb"."parent_id" = ?
+  
+[2m2023-06-08 14:37:00.279[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m SELECT "host_tb"."id", "host_tb"."host", "host_tb"."secret", …; rows affected: 1, rows returned: 1, elapsed: 306.069µs
+
+SELECT
+  "host_tb"."id",
+  "host_tb"."host",
+  "host_tb"."secret",
+  "host_tb"."create_time",
+  "host_tb"."update_time",
+  "host_tb"."protocol"
+FROM
+  "host_tb"
+WHERE
+  "host_tb"."id" = ?
+LIMIT
+  ?
+  
+[2m2023-06-08 14:37:00.285[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m INSERT INTO "project_tb" ("path", …; rows affected: 1, rows returned: 0, elapsed: 1.981ms
+
+INSERT INTO
+  "project_tb" (
+    "path",
+    "name",
+    "parent_id",
+    "token",
+    "create_time",
+    "update_time"
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?)
+  
+[2m2023-06-08 14:37:00.292[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m SELECT "project_tb"."id", "project_tb"."path", "project_tb"."name", …; rows affected: 1, rows returned: 1, elapsed: 293.150µs
+
+SELECT
+  "project_tb"."id",
+  "project_tb"."path",
+  "project_tb"."name",
+  "project_tb"."parent_id",
+  "project_tb"."command",
+  "project_tb"."token",
+  "project_tb"."create_time",
+  "project_tb"."update_time"
+FROM
+  "project_tb"
+WHERE
+  "project_tb"."id" = ?
+LIMIT
+  ?
+  
+[2m2023-06-08 14:37:10.213[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m SELECT "host_tb"."id", "host_tb"."host", "host_tb"."secret", …; rows affected: 1, rows returned: 1, elapsed: 253.650µs
+
+SELECT
+  "host_tb"."id",
+  "host_tb"."host",
+  "host_tb"."secret",
+  "host_tb"."create_time",
+  "host_tb"."update_time",
+  "host_tb"."protocol"
+FROM
+  "host_tb"
+  
+[2m2023-06-08 14:37:10.233[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m SELECT "project_tb"."id", "project_tb"."path", "project_tb"."name", …; rows affected: 1, rows returned: 1, elapsed: 560.139µs
+
+SELECT
+  "project_tb"."id",
+  "project_tb"."path",
+  "project_tb"."name",
+  "project_tb"."parent_id",
+  "project_tb"."command",
+  "project_tb"."token",
+  "project_tb"."create_time",
+  "project_tb"."update_time"
+FROM
+  "project_tb"
+WHERE
+  "project_tb"."parent_id" = ?
+  
+[2m2023-06-08 14:39:45.434[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m SELECT "project_tb"."id", "project_tb"."path", "project_tb"."name", …; rows affected: 1, rows returned: 1, elapsed: 200.405µs
+
+SELECT
+  "project_tb"."id",
+  "project_tb"."path",
+  "project_tb"."name",
+  "project_tb"."parent_id",
+  "project_tb"."command",
+  "project_tb"."token",
+  "project_tb"."create_time",
+  "project_tb"."update_time"
+FROM
+  "project_tb"
+WHERE
+  "project_tb"."token" = ?
+LIMIT
+  ?
+  
+[2m2023-06-08 14:39:45.437[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m SELECT "host_tb"."id", "host_tb"."host", "host_tb"."secret", …; rows affected: 1, rows returned: 1, elapsed: 84.151µs
+
+SELECT
+  "host_tb"."id",
+  "host_tb"."host",
+  "host_tb"."secret",
+  "host_tb"."create_time",
+  "host_tb"."update_time",
+  "host_tb"."protocol"
+FROM
+  "host_tb"
+WHERE
+  "host_tb"."id" = ?
+LIMIT
+  ?
+  
+[2m2023-06-08 14:40:00.386[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m SELECT "project_tb"."id", "project_tb"."path", "project_tb"."name", …; rows affected: 1, rows returned: 1, elapsed: 91.528µs
+
+SELECT
+  "project_tb"."id",
+  "project_tb"."path",
+  "project_tb"."name",
+  "project_tb"."parent_id",
+  "project_tb"."command",
+  "project_tb"."token",
+  "project_tb"."create_time",
+  "project_tb"."update_time"
+FROM
+  "project_tb"
+WHERE
+  "project_tb"."token" = ?
+LIMIT
+  ?
+  
+[2m2023-06-08 14:40:00.390[0m [32m INFO[0m [2msqlx::query[0m[2m:[0m SELECT "host_tb"."id", "host_tb"."host", "host_tb"."secret", …; rows affected: 1, rows returned: 1, elapsed: 97.175µs
+
+SELECT
+  "host_tb"."id",
+  "host_tb"."host",
+  "host_tb"."secret",
+  "host_tb"."create_time",
+  "host_tb"."update_time",
+  "host_tb"."protocol"
+FROM
+  "host_tb"
+WHERE
+  "host_tb"."id" = ?
+LIMIT
+  ?
+  
