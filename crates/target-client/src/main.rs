@@ -22,6 +22,7 @@ async fn depoly(
     _depot: &mut Depot,
     res: &mut Response,
 ) -> Result<(), CatchError> {
+	println!("in the depoly");
     let file = req
         .file("file")
         .await
