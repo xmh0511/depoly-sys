@@ -64,7 +64,7 @@ pub fn compress_to_zip<F:FnMut(Message)>(src:&str,dst:&str,mut call_back:Option<
 	Ok(())
 }
 
-pub fn decompress_zip_to_dir<F:FnMut(Message)>(src:&str,dest:&str, mut call_back:Option<F>)->anyhow::Result<Option<Vec<anyhow::Error>>>{
+pub fn decompress_zip_to_dir<F:FnMut(Message)>(src:&str,dest:&str, mut call_back:Option<F>)->anyhow::Result<Option<Vec<String>>>{
 	let file = std::fs::File::open(src)?;
 	let mut archive = zip::ZipArchive::new(file)?;
 	let dest_root_path = Path::new(dest);
@@ -113,7 +113,7 @@ pub fn decompress_zip_to_dir<F:FnMut(Message)>(src:&str,dest:&str, mut call_back
             match std::io::copy(&mut file, &mut outfile){
                 Ok(_) => {},
                 Err(e) => {
-					let err = anyhow::anyhow!("fail to place {}, reson:{e:?}",relative_path.display());
+					let err = format!("fail to place {}, reson:{e:?}",relative_path.display());
 					fail_files.push(err);
 				},
             }
@@ -123,7 +123,13 @@ pub fn decompress_zip_to_dir<F:FnMut(Message)>(src:&str,dest:&str, mut call_back
 		{
 			use std::os::unix::fs::PermissionsExt;
 			if let Some(mode) = file.unix_mode() {
-				std::fs::set_permissions(&outpath, std::fs::Permissions::from_mode(mode))?;
+				match std::fs::set_permissions(&outpath, std::fs::Permissions::from_mode(mode)){
+					Ok(_)=>{},
+					Err(e)=>{
+						let err = format!("fail to give permission to {}, reson:{e:?}",relative_path.display());
+						fail_files.push(err);
+					}
+				};
 			}
 		}
 		index+=1;

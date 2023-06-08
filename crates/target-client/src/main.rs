@@ -22,7 +22,7 @@ async fn depoly(
     _depot: &mut Depot,
     res: &mut Response,
 ) -> Result<(), CatchError> {
-	println!("in the depoly");
+	//println!("in the depoly");
     let file = req
         .file("file")
         .await
@@ -49,7 +49,7 @@ async fn depoly(
         return Err(anyhow::anyhow!("file size checking cannot pass").into());
     } else {
         let r = file_core::decompress_zip_to_dir::<fn(_)>(&file_path, &depoly_path, None)?;
-		println!("r:?");
+		//println!("r:?");
 		match r{
 			Some(e)=>{
 				let j = serde_json::json!({
