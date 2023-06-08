@@ -54,6 +54,7 @@ async fn depoly(
 					"status":0,
 					"msg":format!("{e:#?}")
 				});
+				res.render(Text::Json(j.to_string()));
 			}
 			None=>{
 				let j = serde_json::json!({
