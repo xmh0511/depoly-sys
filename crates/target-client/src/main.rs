@@ -48,6 +48,7 @@ async fn depoly(
         return Err(anyhow::anyhow!("file size checking cannot pass").into());
     } else {
         let r = file_core::decompress_zip_to_dir::<fn(_)>(&file_path, &depoly_path, None)?;
+		println!("r:?");
 		match r{
 			Some(e)=>{
 				let j = serde_json::json!({
