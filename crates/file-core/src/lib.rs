@@ -126,7 +126,7 @@ pub fn decompress_zip_to_dir<F:FnMut(Message)>(src:&str,dest:&str, mut call_back
 					file
 				}
 				Err(e)=>{
-					let err = format!("fail to create {}, reson:{e:?}",relative_path.display());
+					let err = format!("fail to create \"{}\", reson:{e:?}",relative_path.display());
 					fail_files.push(err);
 					continue;
 				}
@@ -135,7 +135,7 @@ pub fn decompress_zip_to_dir<F:FnMut(Message)>(src:&str,dest:&str, mut call_back
             match std::io::copy(&mut file, &mut outfile){
                 Ok(_) => {},
                 Err(e) => {
-					let err = format!("fail to place {}, reson:{e:?}",relative_path.display());
+					let err = format!("fail to place \"{}\", reson:{e:?}",relative_path.display());
 					fail_files.push(err);
 				},
             }
@@ -148,7 +148,7 @@ pub fn decompress_zip_to_dir<F:FnMut(Message)>(src:&str,dest:&str, mut call_back
 				match std::fs::set_permissions(&outpath, std::fs::Permissions::from_mode(mode)){
 					Ok(_)=>{},
 					Err(e)=>{
-						let err = format!("fail to give permission to {}, reson:{e:?}",relative_path.display());
+						let err = format!("fail to give permission to \"{}\", reson:{e:?}",relative_path.display());
 						fail_files.push(err);
 					}
 				};
