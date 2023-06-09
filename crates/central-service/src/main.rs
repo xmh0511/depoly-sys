@@ -492,7 +492,7 @@ async fn depoly(
 		let received_size = file_saved_path.metadata()?.len();
 		if  received_size!= file_size{
 			let j = serde_json::json!({
-				"status":400,
+				"status":100,
 				"msg":format!("object size is not consistent, received:{received_size}, actual:{file_size}")
 			});
 			res.status_code(StatusCode::BAD_REQUEST);

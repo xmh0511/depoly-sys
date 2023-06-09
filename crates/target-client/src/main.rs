@@ -46,7 +46,11 @@ async fn depoly(
         .ok_or(anyhow::anyhow!("file_size not found in request"))?;
     //println!("{}", line!());
     if receive_size != file_size {
-        return Err(anyhow::anyhow!("file size checking cannot pass").into());
+		let j = serde_json::json!({
+			"status":100,
+			"msg":format!("object size is not consistent, received:{receive_size}, actual:{file_size}")
+		});
+		res.render(Text::Json(j.to_string()));
     } else {
         let r = file_core::decompress_zip_to_dir::<fn(_)>(&file_path, &depoly_path, None)?;
 		//println!("r:?");
