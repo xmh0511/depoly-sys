@@ -127,7 +127,7 @@ impl Login {
             res.render(Text::Json(j.to_string()));
         } else {
             let j = serde_json::json!({
-                "status":200,
+                "status":400,
                 "msg":"用户名或密码错误"
             });
             res.status_code(StatusCode::BAD_REQUEST);
