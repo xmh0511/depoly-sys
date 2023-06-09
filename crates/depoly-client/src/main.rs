@@ -52,12 +52,12 @@ fn main() ->anyhow::Result<()> {
 				println!("spurious error, retrying");
 				continue;
 			}else{
-				println!("Error:\n {}",r.to_string());
+				println!("Error:\n {}",serde_json::to_string_pretty(&r));
 				break;
 			}
 		}else{
 			let r = resp.json::<Value>()?;
-			println!("Error:\n {}",r.to_string());
+			println!("Error:\n {}",serde_json::to_string_pretty(&r));
 			break;
 		}
 	}
