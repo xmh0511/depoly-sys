@@ -72,12 +72,15 @@ impl AuthorGuard {
             JwtAuthState::Authorized => {
                 ctrl.call_next(req, depot, res).await;
             }
-            JwtAuthState::Unauthorized => {
-                return Err(anyhow::anyhow!("The identity cannot pass").into());
-            }
-            JwtAuthState::Forbidden => {
-                return Err(anyhow::anyhow!("The identity cannot pass").into());
-            }
+			_=>{
+				let j = serde_json::json!({
+					"status":401,
+					"msg":"Unauthorized"
+				});
+				res.status_code(StatusCode::UNAUTHORIZED);
+				res.render(Text::Plain(j.to_string()));
+				ctrl.skip_rest();
+			}
         }
         Ok(())
     }
