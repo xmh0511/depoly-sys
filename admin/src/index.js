@@ -1,0 +1,44 @@
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+import Login from "./Login";
+import reportWebVitals from './reportWebVitals';
+import 'antd/dist/reset.css';
+
+import {
+	createHashRouter,
+	RouterProvider,
+} from "react-router-dom";
+
+import { ConfigProvider } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
+
+const router = createHashRouter([
+	{
+		path: "/",
+		element: <Login></Login>
+	},
+	{
+		path: "/login",
+		element: <Login></Login>
+	},
+	{
+		path: "/home",
+		element: <App></App>
+	},
+]);
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+	<React.StrictMode>
+		<ConfigProvider locale={zhCN}>
+		  <RouterProvider router={router} />
+		</ConfigProvider>
+	</React.StrictMode>
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();

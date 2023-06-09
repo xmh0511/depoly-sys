@@ -1,4 +1,5 @@
 use config_file::FromConfigFile;
+use salvo::cors::Cors;
 use salvo::prelude::*;
 use serde::{Deserialize, Serialize};
 mod entity;
@@ -14,6 +15,8 @@ use time::{Duration, OffsetDateTime};
 use entity::{host_tb, prelude::*, project_tb};
 
 use chrono::prelude::*;
+
+use salvo::http::Method;
 
 #[derive(Deserialize, Clone)]
 struct Admin {
@@ -68,19 +71,25 @@ impl AuthorGuard {
         res: &mut Response,
         ctrl: &mut FlowCtrl,
     ) -> Result<(), CatchError> {
+        if req.method() == Method::OPTIONS {
+            ctrl.call_next(req, depot, res).await;
+            return Ok(());
+        }
         match depot.jwt_auth_state() {
             JwtAuthState::Authorized => {
+                //println!("oK");
                 ctrl.call_next(req, depot, res).await;
             }
-			_=>{
-				let j = serde_json::json!({
-					"status":401,
-					"msg":"Unauthorized"
-				});
-				res.status_code(StatusCode::UNAUTHORIZED);
-				res.render(Text::Plain(j.to_string()));
-				ctrl.skip_rest();
-			}
+            _ => {
+                //println!("Unauthorized");
+                let j = serde_json::json!({
+                    "status":401,
+                    "msg":"Unauthorized"
+                });
+                res.status_code(StatusCode::UNAUTHORIZED);
+                res.render(Text::Plain(j.to_string()));
+                ctrl.skip_rest();
+            }
         }
         Ok(())
     }
@@ -301,6 +310,7 @@ async fn host_list(
     _depot: &mut Depot,
     res: &mut Response,
 ) -> Result<(), CatchError> {
+    //println!("invoke");
     let db = DB_CONN.get().ok_or(anyhow::anyhow!("database is busy"))?;
     let mut r = HostTb::find().into_json().all(db).await?;
     for item in &mut r {
@@ -314,7 +324,7 @@ async fn host_list(
             .into_json()
             .all(db)
             .await?;
-        item["children"] = serde_json::Value::Array(list);
+        item["projects"] = serde_json::Value::Array(list);
     }
     let j = serde_json::json!({
         "status":200,
@@ -441,41 +451,46 @@ async fn edit_project(
     let token = req
         .form::<String>("token")
         .await
-        .ok_or(anyhow::anyhow!("token not found in the request"))?.trim().to_owned();
+        .ok_or(anyhow::anyhow!("token not found in the request"))?
+        .trim()
+        .to_owned();
 
-	let db = DB_CONN.get().ok_or(anyhow::anyhow!("database is busy"))?;
-	let info = ProjectTb::find().filter(project_tb::Column::Id.eq(id)).one(db).await?;
-	if info.is_none(){
-		let j = serde_json::json!({
+    let db = DB_CONN.get().ok_or(anyhow::anyhow!("database is busy"))?;
+    let info = ProjectTb::find()
+        .filter(project_tb::Column::Id.eq(id))
+        .one(db)
+        .await?;
+    if info.is_none() {
+        let j = serde_json::json!({
             "status":400,
             "msg":"record not found in the database"
         });
         res.status_code(StatusCode::BAD_REQUEST);
         res.render(Text::Json(j.to_string()));
-	}else{
-		let mut info = project_tb::ActiveModel::from(info.unwrap());
-		info.path = ActiveValue::set(path);
-		info.parent_id = ActiveValue::set(parent_id);
-		info.name = ActiveValue::set(name);
-		info.update_time = ActiveValue::set(Some(Local::now().naive_local()));
-		info.token = ActiveValue::set(token);
-		info.update(db).await?;
-		let j = serde_json::json!({
+    } else {
+        let mut info = project_tb::ActiveModel::from(info.unwrap());
+        info.path = ActiveValue::set(path);
+        info.parent_id = ActiveValue::set(parent_id);
+        info.name = ActiveValue::set(name);
+        info.update_time = ActiveValue::set(Some(Local::now().naive_local()));
+        info.token = ActiveValue::set(token);
+        info.update(db).await?;
+        let j = serde_json::json!({
             "status":200,
             "msg":{
-				"msg":"OK"
-			}
+                "msg":"OK"
+            }
         });
         res.render(Text::Json(j.to_string()));
-	}
+    }
     Ok(())
 }
 struct FileDroper(std::path::PathBuf);
-impl Drop for FileDroper{
-	fn drop(&mut self) {
-		tracing::info!("exhaust {}",self.0.display());
-		std::fs::remove_file(&self.0).unwrap_or_default();
-	}
+impl Drop for FileDroper {
+    fn drop(&mut self) {
+        tracing::info!("exhaust {}", self.0.display());
+        std::fs::remove_file(&self.0).unwrap_or_default();
+    }
 }
 
 #[handler]
@@ -484,52 +499,86 @@ async fn depoly(
     _depot: &mut Depot,
     res: &mut Response,
 ) -> Result<(), CatchError> {
-	let file = req.file("file").await.ok_or(anyhow::anyhow!("file not found in the request"))?;
-	let file_saved_path = file.path().to_owned();
-	let _file_droper = FileDroper(file_saved_path.clone());
-	let file_size = req.form::<u64>("file_size").await.ok_or(anyhow::anyhow!("file_size not found in the request"))?;
-	let token =  req.form::<&str>("token").await.ok_or(anyhow::anyhow!("token not found in the request"))?.trim().to_owned();
-	let db = DB_CONN.get().ok_or(anyhow::anyhow!("database is busy"))?;
-	let info = ProjectTb::find().filter(project_tb::Column::Token.eq(token.clone())).one(db).await?;
-	if info.is_some(){
-		let received_size = file_saved_path.metadata()?.len();
-		if  received_size!= file_size{
-			let j = serde_json::json!({
-				"status":100,
-				"msg":format!("object size is not consistent, received:{received_size}, actual:{file_size}")
-			});
-			res.status_code(StatusCode::BAD_REQUEST);
-			res.render(Text::Json(j.to_string()));
-		}else{
-			let file = tokio::fs::read(&file_saved_path).await?;
-			let file_name = file_saved_path.file_name().ok_or(anyhow::anyhow!("file_name cannot be acquired"))?.to_str().ok_or(anyhow::anyhow!("file_name cannot be converted to canonical string"))?.to_owned();
-			let file_part = reqwest::multipart::Part::bytes(file).file_name(file_name).mime_str("application/zip")?;
-			let form = reqwest::multipart::Form::new().part("file", file_part);
-			let info = info.unwrap();
-			let parent_id = info.parent_id;
-			let depoly_path = info.path;
-			let group = HostTb::find().filter(host_tb::Column::Id.eq(parent_id)).one(db).await?.ok_or(anyhow::anyhow!("Cannot find group information"))?;
-			let secret = group.secret;
-			let protocol = group.protocol;
-			let remote_addr = group.host;
-			let form = form.text("file_size", file_size.to_string()).text("depoly_path", depoly_path);
-			let client = reqwest::Client::new();
-			let url = format!("{protocol}://{remote_addr}/depoly");
-			let resp = client.post(url).header("secret", secret).multipart(form).send().await?;
-			let status = resp.status();
-			let json = resp.json::<serde_json::Value>().await?;
-			res.status_code(status);
-			res.render(Text::Json(json.to_string()));
-		}
-	}else{
-		let j = serde_json::json!({
+    let file = req
+        .file("file")
+        .await
+        .ok_or(anyhow::anyhow!("file not found in the request"))?;
+    let file_saved_path = file.path().to_owned();
+    let _file_droper = FileDroper(file_saved_path.clone());
+    let file_size = req
+        .form::<u64>("file_size")
+        .await
+        .ok_or(anyhow::anyhow!("file_size not found in the request"))?;
+    let token = req
+        .form::<&str>("token")
+        .await
+        .ok_or(anyhow::anyhow!("token not found in the request"))?
+        .trim()
+        .to_owned();
+    let db = DB_CONN.get().ok_or(anyhow::anyhow!("database is busy"))?;
+    let info = ProjectTb::find()
+        .filter(project_tb::Column::Token.eq(token.clone()))
+        .one(db)
+        .await?;
+    if info.is_some() {
+        let received_size = file_saved_path.metadata()?.len();
+        if received_size != file_size {
+            let j = serde_json::json!({
+                "status":100,
+                "msg":format!("object size is not consistent, received:{received_size}, actual:{file_size}")
+            });
+            res.status_code(StatusCode::BAD_REQUEST);
+            res.render(Text::Json(j.to_string()));
+        } else {
+            let file = tokio::fs::read(&file_saved_path).await?;
+            let file_name = file_saved_path
+                .file_name()
+                .ok_or(anyhow::anyhow!("file_name cannot be acquired"))?
+                .to_str()
+                .ok_or(anyhow::anyhow!(
+                    "file_name cannot be converted to canonical string"
+                ))?
+                .to_owned();
+            let file_part = reqwest::multipart::Part::bytes(file)
+                .file_name(file_name)
+                .mime_str("application/zip")?;
+            let form = reqwest::multipart::Form::new().part("file", file_part);
+            let info = info.unwrap();
+            let parent_id = info.parent_id;
+            let depoly_path = info.path;
+            let group = HostTb::find()
+                .filter(host_tb::Column::Id.eq(parent_id))
+                .one(db)
+                .await?
+                .ok_or(anyhow::anyhow!("Cannot find group information"))?;
+            let secret = group.secret;
+            let protocol = group.protocol;
+            let remote_addr = group.host;
+            let form = form
+                .text("file_size", file_size.to_string())
+                .text("depoly_path", depoly_path);
+            let client = reqwest::Client::new();
+            let url = format!("{protocol}://{remote_addr}/depoly");
+            let resp = client
+                .post(url)
+                .header("secret", secret)
+                .multipart(form)
+                .send()
+                .await?;
+            let status = resp.status();
+            let json = resp.json::<serde_json::Value>().await?;
+            res.status_code(status);
+            res.render(Text::Json(json.to_string()));
+        }
+    } else {
+        let j = serde_json::json!({
             "status":400,
             "msg":format!("invalid token: {token}")
         });
         res.status_code(StatusCode::BAD_REQUEST);
         res.render(Text::Json(j.to_string()));
-	}
-	Ok(())
+    }
+    Ok(())
 }
 
 #[tokio::main]
@@ -558,49 +607,72 @@ async fn main() -> anyhow::Result<()> {
         ])
         .response_error(false);
 
+    let cors_handler = Cors::new()
+        .allow_origin("*")
+        .allow_headers("authorization")
+        .allow_methods(vec![
+            Method::GET,
+            Method::POST,
+            Method::DELETE,
+            Method::OPTIONS,
+        ])
+        .into_handler();
     let router = Router::with_path("api").hoop(auth_handler);
-    let router = router.push(Router::with_path("login").post(Login {
-        secret_key: config.secret_key.clone(),
-        admin: config.admin.clone(),
-    }));
+    let router = router.push(
+        Router::with_path("login")
+            .post(Login {
+                secret_key: config.secret_key.clone(),
+                admin: config.admin.clone(),
+            })
+            .options(handler::empty()),
+    );
     let router = router.push(
         Router::with_path("host/add")
             .hoop(AuthorGuard)
-            .post(add_host),
+            .post(add_host)
+            .options(handler::empty()),
     );
     let router = router.push(
         Router::with_path("host/list")
             .hoop(AuthorGuard)
-            .get(host_list),
+            .get(host_list)
+            .options(handler::empty()),
     );
     let router = router.push(
         Router::with_path("host/del")
             .hoop(AuthorGuard)
-            .post(del_host),
+            .post(del_host)
+            .options(handler::empty()),
     );
     let router = router.push(
         Router::with_path("host/edit")
             .hoop(AuthorGuard)
-            .post(edit_host),
+            .post(edit_host)
+            .options(handler::empty()),
     );
     let router = router.push(
         Router::with_path("project/add")
             .hoop(AuthorGuard)
-            .post(add_project),
+            .post(add_project)
+            .options(handler::empty()),
     );
     let router = router.push(
         Router::with_path("project/del")
             .hoop(AuthorGuard)
-            .post(del_project),
+            .post(del_project)
+            .options(handler::empty()),
     );
-	let router = router.push(
+    let router = router.push(
         Router::with_path("project/edit")
             .hoop(AuthorGuard)
-            .post(edit_project),
+            .post(edit_project)
+            .options(handler::empty()),
     );
 
-	let root_router = Router::new().push(Router::with_path("depoly").post(depoly));
-	let root_router = root_router.push(router);
+    let root_router = Router::new()
+        .hoop(cors_handler)
+        .push(Router::with_path("depoly").post(depoly));
+    let root_router = root_router.push(router);
     let acceptor = TcpListener::new(&config.host).bind().await;
     Server::new(acceptor).serve(root_router).await;
     Ok(())
