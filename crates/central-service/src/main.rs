@@ -468,6 +468,19 @@ async fn edit_project(
         res.status_code(StatusCode::BAD_REQUEST);
         res.render(Text::Json(j.to_string()));
     } else {
+        let search = HostTb::find()
+            .filter(host_tb::Column::Id.eq(parent_id))
+            .one(db)
+            .await?;
+        if search.is_none() {
+            let j = serde_json::json!({
+                "status":400,
+                "msg":"group does not exist"
+            });
+            res.status_code(StatusCode::BAD_REQUEST);
+            res.render(Text::Json(j.to_string()));
+			return Ok(())
+        }
         let mut info = project_tb::ActiveModel::from(info.unwrap());
         info.path = ActiveValue::set(path);
         info.parent_id = ActiveValue::set(parent_id);
@@ -499,7 +512,7 @@ async fn check_auth(
         }
     });
     res.render(Text::Json(j.to_string()));
-	Ok(())
+    Ok(())
 }
 
 #[handler]
@@ -508,8 +521,8 @@ async fn index(
     _depot: &mut Depot,
     res: &mut Response,
 ) -> Result<(), CatchError> {
-	res.render(Redirect::other("/admin"));
-	Ok(())
+    res.render(Redirect::other("/admin"));
+    Ok(())
 }
 struct FileDroper(std::path::PathBuf);
 impl Drop for FileDroper {
@@ -703,7 +716,7 @@ async fn main() -> anyhow::Result<()> {
 
     let root_router = Router::new()
         .hoop(cors_handler)
-		.get(index)
+        .get(index)
         .push(Router::with_path("depoly").post(depoly));
     let root_router = root_router.push(router);
     let web_router = Router::with_path("admin/<**path>").get(
