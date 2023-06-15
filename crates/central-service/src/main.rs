@@ -485,6 +485,32 @@ async fn edit_project(
     }
     Ok(())
 }
+
+#[handler]
+async fn check_auth(
+    _req: &mut Request,
+    _depot: &mut Depot,
+    res: &mut Response,
+) -> Result<(), CatchError> {
+    let j = serde_json::json!({
+        "status":200,
+        "msg":{
+            "msg":"OK"
+        }
+    });
+    res.render(Text::Json(j.to_string()));
+	Ok(())
+}
+
+#[handler]
+async fn index(
+    _req: &mut Request,
+    _depot: &mut Depot,
+    res: &mut Response,
+) -> Result<(), CatchError> {
+	res.render(Redirect::other("/admin"));
+	Ok(())
+}
 struct FileDroper(std::path::PathBuf);
 impl Drop for FileDroper {
     fn drop(&mut self) {
@@ -619,6 +645,12 @@ async fn main() -> anyhow::Result<()> {
         .into_handler();
     let router = Router::with_path("api").hoop(auth_handler);
     let router = router.push(
+        Router::with_path("check")
+            .hoop(AuthorGuard)
+            .post(check_auth)
+            .options(handler::empty()),
+    );
+    let router = router.push(
         Router::with_path("login")
             .post(Login {
                 secret_key: config.secret_key.clone(),
@@ -671,8 +703,15 @@ async fn main() -> anyhow::Result<()> {
 
     let root_router = Router::new()
         .hoop(cors_handler)
+		.get(index)
         .push(Router::with_path("depoly").post(depoly));
     let root_router = root_router.push(router);
+    let web_router = Router::with_path("admin/<**path>").get(
+        StaticDir::new(["admin"])
+            .defaults("index.html")
+            .listing(false),
+    );
+    let root_router = root_router.push(web_router);
     let acceptor = TcpListener::new(&config.host).bind().await;
     Server::new(acceptor).serve(root_router).await;
     Ok(())

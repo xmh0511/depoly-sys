@@ -1,13 +1,33 @@
-import { Button, Form, Input ,message} from "antd";
-import { useState } from "react";
+import { Button, Form, Input, message } from "antd";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import qs from "qs";
 import "./Login.css";
 export default function Login() {
+  const token = window.localStorage.getItem("token");
   const [userName, setUserName] = useState("");
   const [passWord, setPassWord] = useState("");
   const navigate = useNavigate();
+  useEffect(() => {
+    const check = async () => {
+      try {
+        let r = await axios.post(`${window.apiUri}/api/check`, null, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        //console.log(r);
+        if (r.data.status === 200) {
+          navigate("/home");
+        }
+      } catch (e) {
+        //console.log("errr",e.response.data.msg);
+        //message.error(e.response.data.msg);
+      }
+    };
+    check();
+  }, [token, navigate]);
   const onFinish = async () => {
     //console.log(userName,passWord);
     try {
@@ -19,14 +39,14 @@ export default function Login() {
         })
       );
       console.log(r);
-	  if(r.data.status ===  200){
-		window.localStorage.setItem("token",r.data.msg.token);
-		navigate("/home");
-	  }
+      if (r.data.status === 200) {
+        window.localStorage.setItem("token", r.data.msg.token);
+        navigate("/home");
+      }
     } catch (e) {
-		//console.log("errr",e.response.data.msg);
-		message.error(e.response.data.msg);
-	}
+      //console.log("errr",e.response.data.msg);
+      message.error(e.response.data.msg);
+    }
   };
   return (
     <div className="login-content">

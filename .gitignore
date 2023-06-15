@@ -3,3 +3,4 @@ crates/central-service/depoly_sys.db
 crates/central-service/logs
 crates/target-client/logs
 admin/node_modules
+admin/build

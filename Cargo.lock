@@ -1844,6 +1844,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f746c4065a8fa3fe23974dd82f15431cc8d40779821001404d10d2e79ca7d79"
 
 [[package]]
+name = "path-slash"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e91099d4268b0e11973f036e885d652fb0b21fedcf69738c627f94db6a44f42"
+
+[[package]]
 name = "pbkdf2"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2285,6 +2291,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "rust-embed"
+version = "6.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b68543d5527e158213414a92832d2aab11a84d2571a5eb021ebe22c43aab066"
+dependencies = [
+ "rust-embed-impl",
+ "rust-embed-utils",
+ "walkdir",
+]
+
+[[package]]
+name = "rust-embed-impl"
+version = "6.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d4e0f0ced47ded9a68374ac145edd65a6c1fa13a96447b873660b2a568a0fd7"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rust-embed-utils",
+ "syn 1.0.109",
+ "walkdir",
+]
+
+[[package]]
+name = "rust-embed-utils"
+version = "7.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "512b0ab6853f7e14e3c8754acb43d6f748bb9ced66aa5915a6553ac8213f7731"
+dependencies = [
+ "sha2",
+ "walkdir",
+]
+
+[[package]]
 name = "rust_decimal"
 version = "1.29.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2356,6 +2396,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5994fc36c3ec3838ee5ab714481bdb179bfc69d414a9955c720893bb5b71d14"
 dependencies = [
  "salvo-cors",
+ "salvo-serve-static",
  "salvo_core",
  "salvo_extra",
 ]
@@ -2368,6 +2409,26 @@ checksum = "d8a8e916d0c0dc39eaae44a59273d84848ac61a8125d37e8bc36cc9a1bdd5fa5"
 dependencies = [
  "bytes",
  "salvo_core",
+ "tracing",
+]
+
+[[package]]
+name = "salvo-serve-static"
+version = "0.42.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "410ba972e99be298703c59a1b2458f0941641d1c564858377c87b58d2287b05e"
+dependencies = [
+ "hex",
+ "mime",
+ "mime_guess",
+ "path-slash",
+ "percent-encoding",
+ "rust-embed",
+ "salvo_core",
+ "serde",
+ "serde_json",
+ "time 0.3.21",
+ "tokio",
  "tracing",
 ]
 

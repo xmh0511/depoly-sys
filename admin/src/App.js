@@ -22,29 +22,30 @@ function App() {
 	const [proprotocol, setProprotocol] = useState("http");
 	const [editHostDialog, setEditHostDialog] = useState(false);
 	const [editHostId, setEditHostId] = useState("");
-	const getHostList = async () => {
-		try {
-			const r = await axios.get(`${window.apiUri}/api/host/list`, {
-				headers: {
-					"Authorization": `Bearer ${token}`
-				}
-			});
-			console.log(r);
-			if (r.data.status === 200) {
-				setHostList(r.data.msg.list);
-			} else {
-				message.error(`${r.data.msg}`);
-			}
-		} catch (e) {
-			if (e.status === 401) {
-				navigate("/login");
-			}
-		}
-	}
+	const [updatePage, setUpdatePage] = useState(0);
 	useEffect(() => {
 		//console.log(protocol);
+		const getHostList = async () => {
+			try {
+				const r = await axios.get(`${window.apiUri}/api/host/list`, {
+					headers: {
+						"Authorization": `Bearer ${token}`
+					}
+				});
+				console.log(r);
+				if (r.data.status === 200) {
+					setHostList(r.data.msg.list);
+				} else {
+					message.error(`${r.data.msg}`);
+				}
+			} catch (e) {
+				if (e.status === 401) {
+					navigate("/login");
+				}
+			}
+		}
 		getHostList();
-	}, []);
+	}, [navigate,token,updatePage]);
 
 	const columns = [
 		{ title: 'ID', dataIndex: 'id', key: 'id' },
@@ -93,7 +94,8 @@ function App() {
 								});
 								//console.log(r);
 								if (r.data.status === 200) {
-									getHostList();
+									//getHostList();
+									setUpdatePage(updatePage+1);
 								} else {
 									message.error(`${r.data.msg}`);
 								}
@@ -163,7 +165,8 @@ function App() {
 							});
 							//console.log(r);
 							if (r.data.status === 200) {
-								getHostList();
+								//getHostList();
+								setUpdatePage(updatePage+1);
 							} else {
 								message.error(`${r.data.msg}`);
 							}
@@ -195,7 +198,8 @@ function App() {
 						}
 					});
 					if (r.data.status === 200) {
-						getHostList();
+						//getHostList();
+						setUpdatePage(updatePage+1);
 						setEditHostDialog(false);
 					} else {
 						message.error(`${r.data.msg}`);
@@ -261,7 +265,8 @@ function App() {
 						}
 					});
 					if (r.data.status === 200) {
-						getHostList();
+						//getHostList();
+						setUpdatePage(updatePage+1);
 						setAddprojectdialog(false);
 					} else {
 						message.error(`${r.data.msg}`);
@@ -323,7 +328,8 @@ function App() {
 						}
 					});
 					if (r.data.status === 200) {
-						getHostList();
+						//getHostList();
+						setUpdatePage(updatePage+1);
 						setAddhostdialog(false);
 					} else {
 						message.error(`${r.data.msg}`);
