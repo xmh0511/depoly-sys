@@ -52,7 +52,17 @@ async fn depoly(
 		});
 		res.render(Text::Json(j.to_string()));
     } else {
-        let r = file_core::decompress_zip_to_dir::<fn(_)>(&file_path, &depoly_path, None)?;
+        let r = match file_core::decompress_zip_to_dir::<fn(_)>(&file_path, &depoly_path, None){
+			Ok(r)=>{r}
+			Err(e)=>{
+				let j = serde_json::json!({
+					"status":101,
+					"msg":format!("{e:?}")
+				});
+				res.render(Text::Json(j.to_string()));
+				return Ok(());
+			}
+		};
 		//println!("r:?");
 		match r{
 			Some(e)=>{
