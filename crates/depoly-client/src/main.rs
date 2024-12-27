@@ -10,8 +10,8 @@ struct Args {
     remote: String,
     #[arg(short, long)]
     token: String,
-    #[arg(short, long, default_value_t = String::from("http"))]
-    protocol: String,
+    // #[arg(short, long, default_value_t = String::from("http"))]
+    // protocol: String,
     #[arg(long, default_value_t = 3)]
     retry: i32,
 }
@@ -23,8 +23,10 @@ fn main() -> anyhow::Result<()> {
         let temp_dir = std::env::temp_dir();
         let file_name = format!("{}.zip", uuid::Uuid::new_v4().to_string());
         let temp_zip = temp_dir.join(Path::new(&file_name));
-        let mut bar = progress::Bar::new();
-        bar.set_job_title("Package Objects");
+        //println!("save path {}",temp_zip.to_string_lossy());
+        //let mut bar = progress::Bar::new();
+        let line_progress = indicatif::ProgressBar::new(100);
+        // bar.set_job_title("Package Objects");
         file_core::compress_to_zip(
             current_dir
                 .to_str()
@@ -32,17 +34,16 @@ fn main() -> anyhow::Result<()> {
             temp_zip
                 .to_str()
                 .ok_or(anyhow::anyhow!("invalid temporary path {:?}", temp_zip))?,
-            Some(move |msg: file_core::Message| {
-                bar.reach_percent((msg.progress * 100 as f64) as i32);
-                //std::thread::sleep(std::time::Duration::from_secs(1));
+            Some(|msg: file_core::Message| {
+                line_progress.set_position((msg.progress * 100f64) as u64);
             }),
         )?;
-        println!();
+        line_progress.finish_with_message("Package objects Done!!!");
 
         let token = args.token.clone();
-        let remote_ip = args.remote.clone();
-        let protocol = args.protocol.clone();
-        let remote = format!("{protocol}://{remote_ip}"); //args.remote;
+        // let remote_ip = args.remote.clone();
+        // let protocol = args.protocol.clone();
+        let remote = args.remote.clone(); //format!("{protocol}://{remote_ip}"); //args.remote;
         let file_size = temp_zip.metadata()?.len().to_string();
         let client = reqwest::blocking::Client::new();
         println!("Start to upload objects to the remote server");
@@ -64,8 +65,8 @@ fn main() -> anyhow::Result<()> {
                     .as_u64()
                     .unwrap_or(0);
                 if code == 200 {
-                    println!("Depoly successfully");
-					std::fs::remove_file(temp_zip)?;
+                    println!("Deploy successfully");
+                    std::fs::remove_file(temp_zip)?;
                     break 'Complete;
                 } else if code == 100 {
                     //upload size issue
@@ -73,18 +74,21 @@ fn main() -> anyhow::Result<()> {
                     continue;
                 } else if code == 101 {
                     //zip archive issue
-                    println!("Error:\n {}\n, retrying all", serde_json::to_string_pretty(&r)?);
-					std::fs::remove_file(temp_zip)?;
+                    println!(
+                        "Error:\n {}\n, retrying all",
+                        serde_json::to_string_pretty(&r)?
+                    );
+                    std::fs::remove_file(temp_zip)?;
                     continue 'Complete;
                 } else {
                     println!("Error:\n {}", serde_json::to_string_pretty(&r)?);
-					std::fs::remove_file(temp_zip)?;
+                    std::fs::remove_file(temp_zip)?;
                     break 'Complete;
                 }
             } else {
                 let r = resp.json::<Value>()?;
                 println!("Error:\n {}", serde_json::to_string_pretty(&r)?);
-				std::fs::remove_file(temp_zip)?;
+                std::fs::remove_file(temp_zip)?;
                 break 'Complete;
             }
         }

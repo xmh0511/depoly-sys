@@ -479,7 +479,7 @@ async fn edit_project(
             });
             res.status_code(StatusCode::BAD_REQUEST);
             res.render(Text::Json(j.to_string()));
-			return Ok(())
+            return Ok(());
         }
         let mut info = project_tb::ActiveModel::from(info.unwrap());
         info.path = ActiveValue::set(path);

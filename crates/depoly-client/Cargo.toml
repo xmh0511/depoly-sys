@@ -1,5 +1,5 @@
 [package]
-name = "depoly-client"
+name = "deploy-client"
 version = "0.1.0"
 edition = "2021"
 
@@ -17,4 +17,5 @@ uuid = {version = "1.3.3",features = [
 
 reqwest = { version = "0.11.18", features = ["json","blocking","multipart"] }
 serde_json = "1.0.96"
-progress = "0.2.0"
+#progress = "0.2.0"
+indicatif = "0.17.9"

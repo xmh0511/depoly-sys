@@ -9,11 +9,11 @@ struct Config {
 }
 
 struct FileDroper(std::path::PathBuf);
-impl Drop for FileDroper{
-	fn drop(&mut self) {
-		tracing::info!("exhaust {}",self.0.display());
-		std::fs::remove_file(&self.0).unwrap_or_default();
-	}
+impl Drop for FileDroper {
+    fn drop(&mut self) {
+        tracing::info!("exhaust {}", self.0.display());
+        std::fs::remove_file(&self.0).unwrap_or_default();
+    }
 }
 
 #[handler]
@@ -22,12 +22,12 @@ async fn depoly(
     _depot: &mut Depot,
     res: &mut Response,
 ) -> Result<(), CatchError> {
-	//println!("in the depoly");
+    //println!("in the depoly");
     let file = req
         .file("file")
         .await
         .ok_or(anyhow::anyhow!("file not found in request"))?;
-	let _file_droper = FileDroper(file.path().to_owned());
+    let _file_droper = FileDroper(file.path().to_owned());
     let file_path = file
         .path()
         .to_owned()
@@ -46,40 +46,40 @@ async fn depoly(
         .ok_or(anyhow::anyhow!("file_size not found in request"))?;
     //println!("{}", line!());
     if receive_size != file_size {
-		let j = serde_json::json!({
-			"status":100,
-			"msg":format!("object size is not consistent, received:{receive_size}, actual:{file_size}")
-		});
-		res.render(Text::Json(j.to_string()));
+        let j = serde_json::json!({
+            "status":100,
+            "msg":format!("object size is not consistent, received:{receive_size}, actual:{file_size}")
+        });
+        res.render(Text::Json(j.to_string()));
     } else {
-        let r = match file_core::decompress_zip_to_dir::<fn(_)>(&file_path, &depoly_path, None){
-			Ok(r)=>{r}
-			Err(e)=>{
-				let j = serde_json::json!({
-					"status":101,
-					"msg":format!("{e:?}")
-				});
-				res.render(Text::Json(j.to_string()));
-				return Ok(());
-			}
-		};
-		//println!("r:?");
-		match r{
-			Some(e)=>{
-				let j = serde_json::json!({
-					"status":0,
-					"msg":e
-				});
-				res.render(Text::Json(j.to_string()));
-			}
-			None=>{
-				let j = serde_json::json!({
-					"status":200,
-					"msg":"The project is successfully depolied"
-				});
-				res.render(Text::Json(j.to_string()));
-			}
-		}
+        let r = match file_core::decompress_zip_to_dir::<fn(_)>(&file_path, &depoly_path, None) {
+            Ok(r) => r,
+            Err(e) => {
+                let j = serde_json::json!({
+                    "status":101,
+                    "msg":format!("{e:?}")
+                });
+                res.render(Text::Json(j.to_string()));
+                return Ok(());
+            }
+        };
+        //println!("r:?");
+        match r {
+            Some(e) => {
+                let j = serde_json::json!({
+                    "status":0,
+                    "msg":e
+                });
+                res.render(Text::Json(j.to_string()));
+            }
+            None => {
+                let j = serde_json::json!({
+                    "status":200,
+                    "msg":"The project is successfully depolied"
+                });
+                res.render(Text::Json(j.to_string()));
+            }
+        }
     };
     Ok(())
 }
